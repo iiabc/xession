@@ -1,8 +1,7 @@
 dependencies {
-    compileOnly(project(":project:module-api"))
     compileOnly(project(":project:module-util"))
-    compileOnly(project(":project:module-kether"))
     compileOnly(project(":project:module-reader"))
+    compileOnly(project(":project:session-questengine"))
 }
 
 // 子模块

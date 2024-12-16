@@ -1,5 +1,6 @@
 package com.hiusers.mc.xession.session.questengine
 
+import com.hiusers.mc.xession.api.BossBarContainer
 import com.hiusers.mc.xession.kether.ActionUtil.parseScript
 import com.hiusers.mc.xession.kether.ActionUtil.runAction
 import com.hiusers.questengine.api.conversation.ActionManager.action
@@ -13,9 +14,8 @@ import com.hiusers.xerr.api.container.SessionConfig
 import org.bukkit.entity.Player
 import taboolib.common5.util.printed
 import taboolib.module.chat.ComponentText
-import taboolib.module.nms.sendRawActionBar
+import taboolib.module.nms.setRawTitle
 import taboolib.platform.compat.replacePlaceholder
-import taboolib.platform.util.sendActionBar
 
 class ConversionFont : ConversationTheme {
 
@@ -26,7 +26,7 @@ class ConversionFont : ConversationTheme {
     override val time = 1L
 
     override fun renderContent(session: Session): List<Any> {
-        val themeConfig = SessionConfig.getConfig() ?: return emptyList()
+        val themeConfig = ThemeLoader.sessionEntity ?: return emptyList()
 
         val renderContent = mutableListOf<ComponentText>()
 
@@ -153,7 +153,6 @@ class ConversionFont : ConversationTheme {
                     } else {
                         // 退出会话
                         session.exit()
-                        player.sendActionBar("")
                     }
                     val answerAction = answer.action
                     if (answerAction.isNotEmpty()) {
@@ -162,14 +161,14 @@ class ConversionFont : ConversationTheme {
                 }
             } else {
                 session.exit()
-                player.sendActionBar("")
             }
         }
     }
 
     override fun sendContent(player: Player, content: Any) {
-        val text = (content as ComponentText).setId().buildRaw()
-        player.sendRawActionBar(text)
+        val text = (content as ComponentText).buildRaw()
+        val bossbar = BossBarContainer.get(player) ?: return
+        bossbar.setRawTitle(text)
     }
 
     override fun answer(session: Session, renderContent: List<Any>, renderAnswer: List<Any>) {
@@ -181,26 +180,23 @@ class ConversionFont : ConversationTheme {
         val selected = session.selected
         val player = session.player
         // 发送最后一行对话内容和全部应答
-        val text = ComponentText.empty().append(renderContent[renderContent.size - 1] as ComponentText).setId()
+        val text = ComponentText.empty().append(renderContent[renderContent.size - 1] as ComponentText)
         if (renderAnswer.isNotEmpty()) {
             if (renderAnswer.size > selected) {
                 text.append(renderAnswer[selected] as ComponentText)
             }
         }
         val raw = text.buildRaw()
-        session.taskSet(5L) {
-            player.sendRawActionBar(raw)
-        }
+        val bossbar = BossBarContainer.get(player) ?: return
+        bossbar.setRawTitle(raw)
     }
 
     override fun preExitAction(session: Session) {
+        BossBarContainer.remove(session.player)
     }
 
     override fun preSendAction(session: Session) {
-    }
-
-    private fun ComponentText.setId(): ComponentText {
-        return clickInsertText("@f31877bc-b8bc-4355-a4e5-9b055a494e9f")
+        BossBarContainer.add(session.player)
     }
 
 }
