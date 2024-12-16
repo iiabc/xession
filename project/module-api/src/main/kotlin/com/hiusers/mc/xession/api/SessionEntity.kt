@@ -1,4 +1,4 @@
-package com.hiusers.mc.xession.session.questengine
+package com.hiusers.mc.xession.api
 
 data class SessionEntity(
     val content: SessionEntityContent = SessionEntityContent(),

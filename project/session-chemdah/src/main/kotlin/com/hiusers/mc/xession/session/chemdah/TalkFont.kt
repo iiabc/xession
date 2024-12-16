@@ -1,21 +1,22 @@
 package com.hiusers.mc.xession.session.chemdah
 
+import com.hiusers.mc.xession.api.BossBarContainer
+import com.hiusers.mc.xession.api.SessionEntity
+import com.hiusers.mc.xession.reader.PluginReader.hasChemdah
 import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
 import com.hiusers.xerr.api.container.LayoutContainer
-import com.hiusers.xerr.api.entity.session.SessionEntity
-import com.hiusers.mc.xession.reader.PluginReader.hasChemdah
 import ink.ptms.chemdah.core.conversation.ConversationManager
 import ink.ptms.chemdah.core.conversation.Session
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.module.chat.ComponentText
-import taboolib.module.nms.sendRawActionBar
+import taboolib.module.nms.setRawTitle
 import java.util.concurrent.CompletableFuture
 
 object TalkFont {
 
     @Awake(LifeCycle.ENABLE)
-    private fun onEnable() {
+    fun onEnable() {
         // 注册会话风格
         if (hasChemdah) {
             ThemeFont().register("xerr")
@@ -126,17 +127,13 @@ object TalkFont {
                 e.printStackTrace()
             }
 
-            session.player.sendRawActionBar(component.setId().buildRaw())
+            BossBarContainer.get(session.player)?.setRawTitle(component.buildRaw())
 
             // 打印完成则结束演示
             if (animationStopped) {
                 complete(null)
             }
         }
-    }
-
-    private fun ComponentText.setId(): ComponentText {
-        return clickInsertText("@f31877bc-b8bc-4355-a4e5-9b055a494e9f")
     }
 
 }

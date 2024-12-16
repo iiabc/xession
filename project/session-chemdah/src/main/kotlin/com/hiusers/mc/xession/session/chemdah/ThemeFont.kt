@@ -1,13 +1,13 @@
 package com.hiusers.mc.xession.session.chemdah
 
-import com.hiusers.xerr.api.container.SessionConfig
+import com.hiusers.mc.xession.api.BossBarContainer
+import com.hiusers.mc.xession.api.SessionSetting
 import com.hiusers.mc.xession.session.chemdah.TalkFont.npcTalkFont
 import ink.ptms.chemdah.core.conversation.ConversationManager
 import ink.ptms.chemdah.core.conversation.Session
 import ink.ptms.chemdah.core.conversation.theme.Theme
 import ink.ptms.chemdah.core.conversation.theme.ThemeSettings
 import taboolib.common.platform.function.submit
-import taboolib.common.platform.function.submitAsync
 import taboolib.common5.util.printed
 import taboolib.module.chat.colored
 import taboolib.platform.util.sendActionBar
@@ -25,7 +25,7 @@ class ThemeFont : Theme<ThemeSettings>() {
     }
 
     override fun onDisplay(session: Session, message: List<String>, canReply: Boolean): CompletableFuture<Void> {
-        val sessionEntity = SessionConfig.getConfig() ?: return CompletableFuture.completedFuture(null)
+        val sessionEntity = SessionSetting.sessionEntity ?: return CompletableFuture.completedFuture(null)
         val future = CompletableFuture<Void>()
         // 延迟
         var d = 0L
@@ -86,23 +86,6 @@ class ThemeFont : Theme<ThemeSettings>() {
             }
             d2 += d
         }
-        // 保持会话显示
-        submitAsync(delay = d2) {
-            submitAsync(period = 5L) {
-                if (session.npcTalking || !session.isValid) {
-                    cancel()
-                } else {
-                    future.npcTalkFont(
-                        session,
-                        session.npcSide,
-                        printMessage = "",
-                        lineIndex = session.npcSide.size,
-                        stopAnimation = true,
-                        sessionEntity
-                    )
-                }
-            }
-        }
         // 消息发送结束后解除标签
         future.thenAccept {
             session.npcTalking = false
@@ -115,13 +98,14 @@ class ThemeFont : Theme<ThemeSettings>() {
 
     override fun onBegin(session: Session): CompletableFuture<Void> {
         session.player.inventory.heldItemSlot = ConversationManager.conf.getInt("theme-xerr.init-slot", 4)
+        BossBarContainer.add(session.player)
         return super.onBegin(session)
     }
 
     override fun onClose(session: Session): CompletableFuture<Void> {
         val future = CompletableFuture<Void>()
         future.thenApply {
-            session.player.sendActionBar("")
+            BossBarContainer.remove(session.player)
         }
         future.complete(null)
         return future
