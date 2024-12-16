@@ -1,6 +1,7 @@
 package com.hiusers.mc.xession.session.questengine
 
 import com.hiusers.mc.xession.api.BossBarContainer
+import com.hiusers.mc.xession.api.SessionSetting
 import com.hiusers.mc.xession.kether.ActionUtil.parseScript
 import com.hiusers.mc.xession.kether.ActionUtil.runAction
 import com.hiusers.questengine.api.conversation.ActionManager.action
@@ -26,7 +27,7 @@ class ConversionFont : ConversationTheme {
     override val time = 1L
 
     override fun renderContent(session: Session): List<Any> {
-        val themeConfig = ThemeLoader.sessionEntity ?: return emptyList()
+        val themeConfig = SessionSetting.sessionEntity ?: return emptyList()
 
         val renderContent = mutableListOf<ComponentText>()
 
