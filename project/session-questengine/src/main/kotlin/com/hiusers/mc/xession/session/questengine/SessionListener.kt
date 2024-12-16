@@ -21,6 +21,7 @@ object SessionListener {
         if (hasQuestEngine) {
             val session = p.getSession() ?: return
             if (session.theme?.style?.lowercase() != "xerr") return
+            if (!session.selecting) return
             val answerSize = session.passAnswer.size
             val selected = session.selected
             val newSelected = updateSelection(selected, ev.newSlot, ev.previousSlot, answerSize)
