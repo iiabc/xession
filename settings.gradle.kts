@@ -1,5 +1,8 @@
-rootProject.name = "ExampleProject"
+rootProject.name = "xession"
 
 include("plugin")
-include("project:core")
-include("project:runtime-bukkit")
+include("project:module-util")
+include("project:module-kether")
+include("project:module-reader")
+include("project:session-questengine")
+include("project:session-chemdah")

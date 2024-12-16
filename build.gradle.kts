@@ -15,8 +15,6 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     // TabooLib 配置
-    // 这里的配置是全局的，如果你的项目有多个模块，这里的配置会被所有模块共享
-    // 为了降低理解难度，使用这种更加无脑的配置方式
     configure<TabooLibExtension> {
         description {
             name(rootProject.name)
@@ -24,16 +22,30 @@ subprojects {
         env {
             install(Basic, Bukkit, BukkitUtil)
             install(CommandHelper)
+            install(BukkitHook)
+            install(Kether, JavaScript)
         }
-        version { taboolib = "6.2.0-beta33" }
+        version {
+            taboolib = "6.2.1-f095116"
+        }
     }
 
     // 仓库
     repositories {
         mavenCentral()
+        maven("https://repo.hiusers.com/releases")
     }
     // 依赖
     dependencies {
+        compileOnly("ink.ptms.core:v12004:12004:mapped")
+        compileOnly("ink.ptms.core:v12004:12004:universal")
+
+        compileOnly("com.google.code.gson:gson:2.8.7")
+
+        compileOnly("api:Xerr:0.0.1-Alpha.4")
+        compileOnly("api:QuestEngineAPI:4.0.5.2")
+        compileOnly("ink.ptms.chemdah:api:1.1.5")
+
         compileOnly(kotlin("stdlib"))
     }
 

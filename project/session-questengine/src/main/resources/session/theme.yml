@@ -1,0 +1,19 @@
+answer:
+  layout:
+    # 基本布局，无论是选中还是未选中
+    common:
+      - "session_answer_1"
+      - "session_answer_2"
+      - "session_answer_3"
+    # 选中时追加布局
+    select:
+      - "session_select_1"
+      - "session_select_2"
+      - "session_select_3"
+    variable:
+      answer: "{answer}"
+option:
+  # 播放
+  animation:
+    enable: true
+    speed: 1
