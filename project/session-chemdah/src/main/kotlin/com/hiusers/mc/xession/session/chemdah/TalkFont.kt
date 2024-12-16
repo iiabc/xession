@@ -9,7 +9,6 @@ import ink.ptms.chemdah.core.conversation.ConversationManager
 import ink.ptms.chemdah.core.conversation.Session
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.module.chat.ComponentText
 import taboolib.module.nms.setRawTitle
 import java.util.concurrent.CompletableFuture
 
@@ -81,7 +80,7 @@ object TalkFont {
 
             // 最终效果
             val animationStopped = lineIndex + 1 >= messages.size && stopAnimation
-            val component = ComponentText.empty()
+            var component = ""
             try {
 
                 themeVariableMap.filterValues { v -> v == "{text_$lineIndex}" }.forEach { (key, _) ->
@@ -94,9 +93,9 @@ object TalkFont {
                     }
                 }
 
-                LayoutContainer.buildComponentText(session.player, sessionEntity.content.layout, variableMap)
+                LayoutContainer.buildComponentString(session.player, sessionEntity.content.layout, variableMap)
                     ?.let { comp ->
-                        component.append(comp)
+                        component += comp
                     }
 
                 // 播放结束后显示应答
@@ -108,16 +107,16 @@ object TalkFont {
                                 this[key] = reply.text
                             }
                         }
-                        LayoutContainer.buildComponentText(session.player, commonLayout[replyIndex], answerVariable)
+                        LayoutContainer.buildComponentString(session.player, commonLayout[replyIndex], answerVariable)
                             ?.let { comp ->
-                                component.append(comp)
+                                component += comp
                             }
 
                         // 如果当前行是选中的，渲染选中部分
                         if (session.playerReplyOnCursor?.equals(reply) == true) {
                             LayoutContainer.buildComponentText(session.player, selectLayout[replyIndex], answerVariable)
                                 ?.let { comp ->
-                                    component.append(comp)
+                                    component += comp
                                 }
                         }
                     }

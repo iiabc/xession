@@ -10,7 +10,6 @@ import ink.ptms.chemdah.core.conversation.theme.ThemeSettings
 import taboolib.common.platform.function.submit
 import taboolib.common5.util.printed
 import taboolib.module.chat.colored
-import taboolib.platform.util.sendActionBar
 import java.util.concurrent.CompletableFuture
 
 class ThemeFont : Theme<ThemeSettings>() {
@@ -78,8 +77,7 @@ class ThemeFont : Theme<ThemeSettings>() {
                     // 对话中断
                     else if (!isCancelled) {
                         isCancelled = true
-                        // 删除 ActionBar
-                        session.player.sendActionBar("")
+                        BossBarContainer.remove(session.player)
                         future.complete(null)
                     }
                 }

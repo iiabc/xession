@@ -17,7 +17,20 @@ subprojects {
     // TabooLib 配置
     configure<TabooLibExtension> {
         description {
-            name(rootProject.name)
+            name("Xession")
+//            name(rootProject.name)
+//            prefix(rootProject.name)
+            contributors {
+                name("HiUsers")
+            }
+            links {
+                name("homepage").url("https://iplugin.hiusers.com/")
+            }
+            dependencies {
+                name("Xerr")
+                name("QuestEngine").optional(true)
+                name("Chemdah").optional(true)
+            }
         }
         env {
             install(Basic, Bukkit, BukkitUtil)
@@ -42,7 +55,7 @@ subprojects {
 
         compileOnly("com.google.code.gson:gson:2.8.7")
 
-        compileOnly("api:Xerr:0.0.1-Alpha.4")
+        compileOnly("api:Xerr:0.0.1-Alpha.5")
         compileOnly("api:QuestEngineAPI:4.0.5.2")
         compileOnly("ink.ptms.chemdah:api:1.1.5")
 

@@ -14,7 +14,6 @@ import com.hiusers.xerr.api.container.LayoutContainer
 import com.hiusers.xerr.api.container.SessionConfig
 import org.bukkit.entity.Player
 import taboolib.common5.util.printed
-import taboolib.module.chat.ComponentText
 import taboolib.module.nms.setRawTitle
 import taboolib.platform.compat.replacePlaceholder
 
@@ -29,7 +28,7 @@ class ConversionFont : ConversationTheme {
     override fun renderContent(session: Session): List<Any> {
         val themeConfig = SessionSetting.sessionEntity ?: return emptyList()
 
-        val renderContent = mutableListOf<ComponentText>()
+        val renderContent = mutableListOf<String>()
 
         val player = session.player
         val name = session.name ?: "{name}"
@@ -62,13 +61,15 @@ class ConversionFont : ConversationTheme {
                 themeVariableMap.filterValues { v -> v == "{text_$index}" }.forEach { (key, _) ->
                     variableMap[key] = it
                 }
-                LayoutContainer.buildComponentText(player, themeConfig.content.layout, variableMap)?.let { comp ->
+                var compStr = ""
+                LayoutContainer.buildComponentString(player, themeConfig.content.layout, variableMap)?.let { comp ->
+                    compStr += comp
                     conversation.tags.forEach {
-                        LayoutContainer.buildComponentText(player, it)?.let { tagsComp ->
-                            comp.append(tagsComp)
+                        LayoutContainer.buildComponentString(player, it)?.let { tagsComp ->
+                            compStr += tagsComp
                         }
                     }
-                    renderContent.add(comp)
+                    renderContent.add(compStr)
                 }
             }
             // 更新模板，此行是最后，进行完整填充，为下一行对话做准备
@@ -84,7 +85,7 @@ class ConversionFont : ConversationTheme {
 
     override fun renderAnswer(player: Player, passAnswer: List<AnswerEntity>): List<Any> {
         val themeConfig = SessionConfig.getConfig() ?: return emptyList()
-        val renderAnswer = mutableListOf<ComponentText>()
+        val renderAnswer = mutableListOf<String>()
 
         val answerLayout = themeConfig.answer.layout
         val commonLayout = answerLayout.common
@@ -92,7 +93,7 @@ class ConversionFont : ConversationTheme {
 
         for (answerIndex in passAnswer.indices) {
             // 渲染应答
-            val componentText = ComponentText.empty()
+            var componentString = ""
 
             // 处理每个应答的渲染
             passAnswer.forEachIndexed { index, answerEntity ->
@@ -108,21 +109,21 @@ class ConversionFont : ConversationTheme {
 
                 // 渲染公共部分
                 if (index < commonLayout.size) {
-                    LayoutContainer.buildComponentText(player, commonLayout[index], variableMap)?.let { comp ->
-                        componentText.append(comp)
+                    LayoutContainer.buildComponentString(player, commonLayout[index], variableMap)?.let { comp ->
+                        componentString += comp
                     }
 
                     // 如果当前行是选中的，渲染选中部分
                     if (index == answerIndex && index < selectLayout.size) {
-                        LayoutContainer.buildComponentText(player, selectLayout[index])?.let { comp ->
-                            componentText.append(comp)
+                        LayoutContainer.buildComponentString(player, selectLayout[index])?.let { comp ->
+                            componentString += comp
                         }
                     }
                 }
             }
 
             // 将渲染结果添加到渲染列表
-            renderAnswer.add(componentText)
+            renderAnswer.add(componentString)
         }
 
         return renderAnswer
@@ -167,7 +168,7 @@ class ConversionFont : ConversationTheme {
     }
 
     override fun sendContent(player: Player, content: Any) {
-        val text = (content as ComponentText).buildRaw()
+        val text = (content as String).buildRaw()
         val bossbar = BossBarContainer.get(player) ?: return
         bossbar.setRawTitle(text)
     }
@@ -181,10 +182,10 @@ class ConversionFont : ConversationTheme {
         val selected = session.selected
         val player = session.player
         // 发送最后一行对话内容和全部应答
-        val text = ComponentText.empty().append(renderContent[renderContent.size - 1] as ComponentText)
+        var text = renderContent[renderContent.size - 1] as String
         if (renderAnswer.isNotEmpty()) {
             if (renderAnswer.size > selected) {
-                text.append(renderAnswer[selected] as ComponentText)
+                text += renderAnswer[selected] as String
             }
         }
         val raw = text.buildRaw()
