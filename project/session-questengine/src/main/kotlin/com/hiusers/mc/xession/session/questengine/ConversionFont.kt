@@ -11,7 +11,6 @@ import com.hiusers.questengine.api.conversation.entity.AnswerEntity
 import com.hiusers.questengine.api.conversation.theme.ConversationTheme
 import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
 import com.hiusers.xerr.api.container.LayoutContainer
-import com.hiusers.xerr.api.container.SessionConfig
 import org.bukkit.entity.Player
 import taboolib.common5.util.printed
 import taboolib.module.nms.setRawTitle
@@ -84,7 +83,7 @@ class ConversionFont : ConversationTheme {
     }
 
     override fun renderAnswer(player: Player, passAnswer: List<AnswerEntity>): List<Any> {
-        val themeConfig = SessionConfig.getConfig() ?: return emptyList()
+        val themeConfig = SessionSetting.sessionEntity ?: return emptyList()
         val renderAnswer = mutableListOf<String>()
 
         val answerLayout = themeConfig.answer.layout
