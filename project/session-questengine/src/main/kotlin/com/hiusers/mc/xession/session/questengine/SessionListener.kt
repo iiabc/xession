@@ -1,6 +1,7 @@
 package com.hiusers.mc.xession.session.questengine
 
 import com.hiusers.mc.xession.api.Select.updateSelection
+import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.mc.xession.reader.PluginReader.hasQuestEngine
 import com.hiusers.questengine.api.conversation.SessionManager.getSession
 import com.hiusers.questengine.api.conversation.reader.ConversationReader
@@ -9,6 +10,7 @@ import org.bukkit.event.player.PlayerAnimationType
 import org.bukkit.event.player.PlayerItemHeldEvent
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.module.nms.PacketSendEvent
 
 object SessionListener {
 
@@ -46,6 +48,38 @@ object SessionListener {
                     if (session.theme?.style?.lowercase() != "xerr") return
                     session.selectAnswerAction()
                 }
+            }
+        }
+    }
+
+    /**
+     * 屏蔽操作栏
+     */
+    @SubscribeEvent
+    fun blockServerPrevent(ev: PacketSendEvent) {
+        if (ev.packet.name == "ClientboundSystemChatPacket") {
+            if (ev.packet.read<Boolean>("overlay") == true) {
+                if (hasQuestEngine && ConfigReader.bossBarPreventActionBar) {
+                    val p = ev.player
+                    val session = p.getSession() ?: return
+                    if (session.theme?.style?.lowercase() != "xerr") return
+                    ev.isCancelled = true
+                }
+            }
+        }
+    }
+
+    /**
+     * 屏蔽系统级别的操作栏
+     */
+    @SubscribeEvent
+    fun preventSystem(ev: PacketSendEvent) {
+        if (ev.packet.nameInSpigot == "ClientboundSetActionBarTextPacket") {
+            if (hasQuestEngine && ConfigReader.bossBarPreventActionBar) {
+                val p = ev.player
+                val session = p.getSession() ?: return
+                if (session.theme?.style?.lowercase() != "xerr") return
+                ev.isCancelled = true
             }
         }
     }

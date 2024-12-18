@@ -2,6 +2,7 @@ package com.hiusers.mc.xession.session.chemdah
 
 import com.hiusers.mc.xession.api.Select.updateSelection
 import com.hiusers.mc.xession.api.SessionSetting
+import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.mc.xession.reader.PluginReader.hasChemdah
 import com.hiusers.mc.xession.session.chemdah.TalkFont.npcTalkFont
 import ink.ptms.chemdah.api.ChemdahAPI.conversationSession
@@ -11,6 +12,7 @@ import org.bukkit.event.player.PlayerAnimationType
 import org.bukkit.event.player.PlayerItemHeldEvent
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.module.nms.PacketSendEvent
 import java.util.concurrent.CompletableFuture
 
 object SessionListener {
@@ -85,6 +87,37 @@ object SessionListener {
             val cursor = session.playerReplyOnCursor
             cursor?.check(session)?.thenAccept {
                 cursor.select(session)
+            }
+        }
+    }
+
+    @SubscribeEvent
+    fun blockServerPrevent(ev: PacketSendEvent) {
+        if (ev.packet.name == "ClientboundSystemChatPacket") {
+            if (ev.packet.read<Boolean>("overlay") == true) {
+                if (hasChemdah && ConfigReader.bossBarPreventActionBar) {
+                    val session = ev.player.conversationSession ?: return
+                    val theme = session.conversation.theme
+                    if (theme is ThemeFont) {
+                        ev.isCancelled = true
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 屏蔽系统级别的操作栏
+     */
+    @SubscribeEvent
+    fun preventSystem(ev: PacketSendEvent) {
+        if (ev.packet.nameInSpigot == "ClientboundSetActionBarTextPacket") {
+            if (hasChemdah && ConfigReader.bossBarPreventActionBar) {
+                val session = ev.player.conversationSession ?: return
+                val theme = session.conversation.theme
+                if (theme is ThemeFont) {
+                    ev.isCancelled = true
+                }
             }
         }
     }

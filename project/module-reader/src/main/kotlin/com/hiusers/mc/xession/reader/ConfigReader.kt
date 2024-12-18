@@ -13,4 +13,7 @@ object ConfigReader {
     @ConfigNode("bossbar.color")
     var bossBarColor: String = "YELLOW"
 
+    @ConfigNode("bossbar.prevent.actionbar")
+    var bossBarPreventActionBar: Boolean = true
+
 }
