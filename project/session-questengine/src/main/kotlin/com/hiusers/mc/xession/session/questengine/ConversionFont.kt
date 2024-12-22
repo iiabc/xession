@@ -12,8 +12,8 @@ import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
 import com.hiusers.xerr.api.container.BossbarLayoutContainer
 import com.hiusers.xerr.api.container.LayoutContainer
 import org.bukkit.entity.Player
+import taboolib.common.platform.function.info
 import taboolib.common5.util.printed
-import taboolib.module.nms.setRawTitle
 import taboolib.platform.compat.replacePlaceholder
 
 class ConversionFont : ConversationTheme {
@@ -123,6 +123,7 @@ class ConversionFont : ConversationTheme {
 
             // 将渲染结果添加到渲染列表
             renderAnswer.add(componentString)
+            info()
         }
 
         return renderAnswer
