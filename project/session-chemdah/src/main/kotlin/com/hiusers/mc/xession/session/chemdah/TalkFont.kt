@@ -113,7 +113,11 @@ object TalkFont {
 
                         // 如果当前行是选中的，渲染选中部分
                         if (session.playerReplyOnCursor?.equals(reply) == true) {
-                            LayoutContainer.buildComponentText(session.player, selectLayout[replyIndex], answerVariable)
+                            LayoutContainer.buildComponentString(
+                                session.player,
+                                selectLayout[replyIndex],
+                                answerVariable
+                            )
                                 ?.let { comp ->
                                     component += comp
                                 }

@@ -10,10 +10,7 @@ object ConfigReader {
     lateinit var config: Configuration
         private set
 
-    @ConfigNode("bossbar.color")
-    var bossBarColor: String = "YELLOW"
-
-    @ConfigNode("bossbar.prevent.actionbar")
-    var bossBarPreventActionBar: Boolean = true
+    @ConfigNode("prevent.actionbar")
+    var preventActionBar: Boolean = true
 
 }

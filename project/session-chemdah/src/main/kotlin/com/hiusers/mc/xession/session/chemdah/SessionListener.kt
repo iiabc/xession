@@ -95,7 +95,7 @@ object SessionListener {
     fun blockServerPrevent(ev: PacketSendEvent) {
         if (ev.packet.name == "ClientboundSystemChatPacket") {
             if (ev.packet.read<Boolean>("overlay") == true) {
-                if (hasChemdah && ConfigReader.bossBarPreventActionBar) {
+                if (hasChemdah && ConfigReader.preventActionBar) {
                     val session = ev.player.conversationSession ?: return
                     val theme = session.conversation.theme
                     if (theme is ThemeFont) {
@@ -112,7 +112,7 @@ object SessionListener {
     @SubscribeEvent
     fun preventSystem(ev: PacketSendEvent) {
         if (ev.packet.nameInSpigot == "ClientboundSetActionBarTextPacket") {
-            if (hasChemdah && ConfigReader.bossBarPreventActionBar) {
+            if (hasChemdah && ConfigReader.preventActionBar) {
                 val session = ev.player.conversationSession ?: return
                 val theme = session.conversation.theme
                 if (theme is ThemeFont) {

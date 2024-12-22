@@ -1,2 +1,3 @@
-bossbar:
-  color: YELLOW
+prevent:
+  # 在对话时是否拦截操作栏
+  actionbar: true

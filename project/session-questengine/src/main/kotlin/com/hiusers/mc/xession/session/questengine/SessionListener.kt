@@ -59,7 +59,7 @@ object SessionListener {
     fun blockServerPrevent(ev: PacketSendEvent) {
         if (ev.packet.name == "ClientboundSystemChatPacket") {
             if (ev.packet.read<Boolean>("overlay") == true) {
-                if (hasQuestEngine && ConfigReader.bossBarPreventActionBar) {
+                if (hasQuestEngine && ConfigReader.preventActionBar) {
                     val p = ev.player
                     val session = p.getSession() ?: return
                     if (session.theme?.style?.lowercase() != "xerr") return
@@ -75,7 +75,7 @@ object SessionListener {
     @SubscribeEvent
     fun preventSystem(ev: PacketSendEvent) {
         if (ev.packet.nameInSpigot == "ClientboundSetActionBarTextPacket") {
-            if (hasQuestEngine && ConfigReader.bossBarPreventActionBar) {
+            if (hasQuestEngine && ConfigReader.preventActionBar) {
                 val p = ev.player
                 val session = p.getSession() ?: return
                 if (session.theme?.style?.lowercase() != "xerr") return
