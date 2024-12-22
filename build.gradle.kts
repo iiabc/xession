@@ -55,8 +55,8 @@ subprojects {
 
         compileOnly("com.google.code.gson:gson:2.8.7")
 
-        compileOnly("api:Xerr:0.0.1-Alpha.5")
-        compileOnly("api:QuestEngineAPI:4.0.5.2")
+        compileOnly("api:XerrAPI:0.0.1-Alpha.6")
+        compileOnly("api:QuestEngineAPI:4.0.5.3")
         compileOnly("ink.ptms.chemdah:api:1.1.5")
 
         compileOnly(kotlin("stdlib"))

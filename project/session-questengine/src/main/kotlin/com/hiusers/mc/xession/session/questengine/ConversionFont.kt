@@ -1,6 +1,5 @@
 package com.hiusers.mc.xession.session.questengine
 
-import com.hiusers.mc.xession.api.BossBarContainer
 import com.hiusers.mc.xession.api.SessionSetting
 import com.hiusers.mc.xession.kether.ActionUtil.parseScript
 import com.hiusers.mc.xession.kether.ActionUtil.runAction
@@ -10,6 +9,7 @@ import com.hiusers.questengine.api.conversation.SessionManager.updateSession
 import com.hiusers.questengine.api.conversation.entity.AnswerEntity
 import com.hiusers.questengine.api.conversation.theme.ConversationTheme
 import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
+import com.hiusers.xerr.api.container.BossbarLayoutContainer
 import com.hiusers.xerr.api.container.LayoutContainer
 import org.bukkit.entity.Player
 import taboolib.common5.util.printed
@@ -168,8 +168,9 @@ class ConversionFont : ConversationTheme {
 
     override fun sendContent(player: Player, content: Any) {
         val text = (content as String).buildRaw()
-        val bossbar = BossBarContainer.get(player) ?: return
-        bossbar.setRawTitle(text)
+        /*val bossbar = BossBarContainer.get(player) ?: return
+        bossbar.setRawTitle(text)*/
+        BossbarLayoutContainer.appendLayoutRaw(player, "xession", text)
     }
 
     override fun answer(session: Session, renderContent: List<Any>, renderAnswer: List<Any>) {
@@ -188,16 +189,18 @@ class ConversionFont : ConversationTheme {
             }
         }
         val raw = text.buildRaw()
-        val bossbar = BossBarContainer.get(player) ?: return
-        bossbar.setRawTitle(raw)
+        /*val bossbar = BossBarContainer.get(player) ?: return
+        bossbar.setRawTitle(raw)*/
+        BossbarLayoutContainer.appendLayoutRaw(player, "xession", raw)
     }
 
     override fun preExitAction(session: Session) {
-        BossBarContainer.remove(session.player)
+//        BossBarContainer.remove(session.player)
+        BossbarLayoutContainer.removeLayout(session.player, "xession")
     }
 
     override fun preSendAction(session: Session) {
-        BossBarContainer.add(session.player)
+//        BossBarContainer.add(session.player)
     }
 
 }

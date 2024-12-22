@@ -1,15 +1,14 @@
 package com.hiusers.mc.xession.session.chemdah
 
-import com.hiusers.mc.xession.api.BossBarContainer
 import com.hiusers.mc.xession.api.SessionEntity
 import com.hiusers.mc.xession.reader.PluginReader.hasChemdah
 import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
+import com.hiusers.xerr.api.container.BossbarLayoutContainer
 import com.hiusers.xerr.api.container.LayoutContainer
 import ink.ptms.chemdah.core.conversation.ConversationManager
 import ink.ptms.chemdah.core.conversation.Session
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.module.nms.setRawTitle
 import java.util.concurrent.CompletableFuture
 
 object TalkFont {
@@ -126,7 +125,8 @@ object TalkFont {
                 e.printStackTrace()
             }
 
-            BossBarContainer.get(session.player)?.setRawTitle(component.buildRaw())
+//            BossBarContainer.get(session.player)?.setRawTitle(component.buildRaw())
+            BossbarLayoutContainer.appendLayoutRaw(session.player, "xession", component.buildRaw())
 
             // 打印完成则结束演示
             if (animationStopped) {
