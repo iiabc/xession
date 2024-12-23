@@ -1,3 +1,7 @@
 prevent:
   # 在对话时是否拦截操作栏
   actionbar: true
+
+session:
+  # 是否使用数据包模式
+  packet: false

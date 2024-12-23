@@ -1,5 +1,6 @@
-package com.hiusers.mc.xession.api
+package com.hiusers.mc.xession.api.reader
 
+import com.hiusers.mc.xession.api.SessionEntity
 import com.hiusers.mc.xession.util.FileUtil
 import com.hiusers.mc.xession.util.FileUtil.deserialize
 import taboolib.module.configuration.Configuration

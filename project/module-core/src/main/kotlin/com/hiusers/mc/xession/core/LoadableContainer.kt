@@ -1,6 +1,6 @@
 package com.hiusers.mc.xession.core
 
-import com.hiusers.mc.xession.api.SessionSetting
+import com.hiusers.mc.xession.api.reader.SessionSetting
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 

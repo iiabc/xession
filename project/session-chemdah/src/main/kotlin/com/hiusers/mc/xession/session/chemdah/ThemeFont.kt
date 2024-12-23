@@ -1,6 +1,7 @@
 package com.hiusers.mc.xession.session.chemdah
 
-import com.hiusers.mc.xession.api.SessionSetting
+import com.hiusers.mc.xession.api.mode.SessionModeManager
+import com.hiusers.mc.xession.api.reader.SessionSetting
 import com.hiusers.mc.xession.session.chemdah.TalkFont.npcTalkFont
 import com.hiusers.xerr.api.container.BossbarLayoutContainer
 import ink.ptms.chemdah.core.conversation.ConversationManager
@@ -77,7 +78,6 @@ class ThemeFont : Theme<ThemeSettings>() {
                     // 对话中断
                     else if (!isCancelled) {
                         isCancelled = true
-//                        BossBarContainer.remove(session.player)
                         BossbarLayoutContainer.removeLayout(session.player, "xession")
                         future.complete(null)
                     }
@@ -96,16 +96,18 @@ class ThemeFont : Theme<ThemeSettings>() {
     }
 
     override fun onBegin(session: Session): CompletableFuture<Void> {
-        session.player.inventory.heldItemSlot = ConversationManager.conf.getInt("theme-xerr.init-slot", 4)
-//        BossBarContainer.add(session.player)
+        val player = session.player
+        player.inventory.heldItemSlot = ConversationManager.conf.getInt("theme-xerr.init-slot", 4)
+        SessionModeManager.play(player)
         return super.onBegin(session)
     }
 
     override fun onClose(session: Session): CompletableFuture<Void> {
         val future = CompletableFuture<Void>()
         future.thenApply {
-//            BossBarContainer.remove(session.player)
-            BossbarLayoutContainer.removeLayout(session.player, "xession")
+            val player = session.player
+            BossbarLayoutContainer.removeLayout(player, "xession")
+            SessionModeManager.cancel(player)
         }
         future.complete(null)
         return future

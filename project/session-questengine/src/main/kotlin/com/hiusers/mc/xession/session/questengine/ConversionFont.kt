@@ -1,6 +1,7 @@
 package com.hiusers.mc.xession.session.questengine
 
-import com.hiusers.mc.xession.api.SessionSetting
+import com.hiusers.mc.xession.api.mode.SessionModeManager
+import com.hiusers.mc.xession.api.reader.SessionSetting
 import com.hiusers.mc.xession.kether.ActionUtil.parseScript
 import com.hiusers.mc.xession.kether.ActionUtil.runAction
 import com.hiusers.questengine.api.conversation.ActionManager.action
@@ -190,18 +191,16 @@ class ConversionFont : ConversationTheme {
             }
         }
         val raw = text.buildRaw()
-        /*val bossbar = BossBarContainer.get(player) ?: return
-        bossbar.setRawTitle(raw)*/
         BossbarLayoutContainer.appendLayoutRaw(player, "xession", raw)
     }
 
     override fun preExitAction(session: Session) {
-//        BossBarContainer.remove(session.player)
         BossbarLayoutContainer.removeLayout(session.player, "xession")
+        SessionModeManager.cancel(session.player)
     }
 
     override fun preSendAction(session: Session) {
-//        BossBarContainer.add(session.player)
+        SessionModeManager.play(session.player)
     }
 
 }

@@ -1,17 +1,19 @@
 package com.hiusers.mc.xession.session.chemdah
 
 import com.hiusers.mc.xession.api.Select.updateSelection
-import com.hiusers.mc.xession.api.SessionSetting
+import com.hiusers.mc.xession.api.reader.SessionSetting
 import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.mc.xession.reader.PluginReader.hasChemdah
 import com.hiusers.mc.xession.session.chemdah.TalkFont.npcTalkFont
 import ink.ptms.chemdah.api.ChemdahAPI.conversationSession
 import ink.ptms.chemdah.core.conversation.Session
+import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerAnimationEvent
 import org.bukkit.event.player.PlayerAnimationType
 import org.bukkit.event.player.PlayerItemHeldEvent
 import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
+import taboolib.module.nms.PacketReceiveEvent
 import taboolib.module.nms.PacketSendEvent
 import java.util.concurrent.CompletableFuture
 
@@ -96,9 +98,7 @@ object SessionListener {
         if (ev.packet.name == "ClientboundSystemChatPacket") {
             if (ev.packet.read<Boolean>("overlay") == true) {
                 if (hasChemdah && ConfigReader.preventActionBar) {
-                    val session = ev.player.conversationSession ?: return
-                    val theme = session.conversation.theme
-                    if (theme is ThemeFont) {
+                    if (isSession(ev.player)) {
                         ev.isCancelled = true
                     }
                 }
@@ -113,13 +113,31 @@ object SessionListener {
     fun preventSystem(ev: PacketSendEvent) {
         if (ev.packet.nameInSpigot == "ClientboundSetActionBarTextPacket") {
             if (hasChemdah && ConfigReader.preventActionBar) {
-                val session = ev.player.conversationSession ?: return
-                val theme = session.conversation.theme
-                if (theme is ThemeFont) {
+                if (isSession(ev.player)) {
                     ev.isCancelled = true
                 }
             }
         }
+    }
+
+    @SubscribeEvent
+    fun cameraClick(ev: PacketReceiveEvent) {
+        if (ev.packet.nameInSpigot == "PacketPlayInUseEntity") {
+            // 避免在相机状态下点击发生错误
+            if (ConfigReader.supportPacket && ConfigReader.sessionPacket) {
+                if (hasChemdah) {
+                    if (isSession(ev.player)) {
+                        ev.isCancelled = true
+                    }
+                }
+            }
+        }
+    }
+
+    private fun isSession(player: Player): Boolean {
+        val session = player.conversationSession ?: return false
+        val theme = session.conversation.theme
+        return theme is ThemeFont
     }
 
 }
