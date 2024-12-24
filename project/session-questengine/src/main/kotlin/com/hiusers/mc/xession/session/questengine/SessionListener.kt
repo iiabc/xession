@@ -59,10 +59,14 @@ object SessionListener {
      */
     @SubscribeEvent
     fun blockServerPrevent(ev: PacketSendEvent) {
-        if (ev.packet.name == "ClientboundSystemChatPacket") {
+        if (ev.packet.nameInSpigot == "ClientboundSystemChatPacket") {
             if (ev.packet.read<Boolean>("overlay") == true) {
                 if (hasQuestEngine && ConfigReader.preventActionBar) {
                     if (isSession(ev.player)) {
+                        val source = ev.packet.source.toString()
+                        if (source.contains("""content={"text":""}""") || source.contains("content=empty")) {
+                            return
+                        }
                         ev.isCancelled = true
                     }
                 }
@@ -85,7 +89,7 @@ object SessionListener {
     }
 
     @SubscribeEvent
-    fun receive(ev: PacketReceiveEvent) {
+    fun cameraClick(ev: PacketReceiveEvent) {
         if (ev.packet.nameInSpigot == "PacketPlayInUseEntity") {
             // 避免在相机状态下点击发生错误
             if (ConfigReader.supportPacket && ConfigReader.sessionPacket) {

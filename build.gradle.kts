@@ -50,8 +50,8 @@ subprojects {
     }
     // 依赖
     dependencies {
-        compileOnly("ink.ptms.core:v12004:12004:mapped")
-        compileOnly("ink.ptms.core:v12004:12004:universal")
+        compileOnly("ink.ptms.core:v11904:11904:mapped")
+        compileOnly("ink.ptms.core:v11904:11904:universal")
 
         compileOnly("com.google.code.gson:gson:2.8.7")
 

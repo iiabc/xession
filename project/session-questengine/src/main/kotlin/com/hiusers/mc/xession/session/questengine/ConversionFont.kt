@@ -4,6 +4,7 @@ import com.hiusers.mc.xession.api.mode.SessionModeManager
 import com.hiusers.mc.xession.api.reader.SessionSetting
 import com.hiusers.mc.xession.kether.ActionUtil.parseScript
 import com.hiusers.mc.xession.kether.ActionUtil.runAction
+import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.questengine.api.conversation.ActionManager.action
 import com.hiusers.questengine.api.conversation.Session
 import com.hiusers.questengine.api.conversation.SessionManager.updateSession
@@ -13,9 +14,9 @@ import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
 import com.hiusers.xerr.api.container.BossbarLayoutContainer
 import com.hiusers.xerr.api.container.LayoutContainer
 import org.bukkit.entity.Player
-import taboolib.common.platform.function.info
 import taboolib.common5.util.printed
 import taboolib.platform.compat.replacePlaceholder
+import taboolib.platform.util.sendActionBar
 
 class ConversionFont : ConversationTheme {
 
@@ -124,7 +125,6 @@ class ConversionFont : ConversationTheme {
 
             // 将渲染结果添加到渲染列表
             renderAnswer.add(componentString)
-            info()
         }
 
         return renderAnswer
@@ -170,8 +170,6 @@ class ConversionFont : ConversationTheme {
 
     override fun sendContent(player: Player, content: Any) {
         val text = (content as String).buildRaw()
-        /*val bossbar = BossBarContainer.get(player) ?: return
-        bossbar.setRawTitle(text)*/
         BossbarLayoutContainer.appendLayoutRaw(player, "xession", text)
     }
 
@@ -200,7 +198,11 @@ class ConversionFont : ConversationTheme {
     }
 
     override fun preSendAction(session: Session) {
-        SessionModeManager.play(session.player)
+        val player = session.player
+        if (ConfigReader.preventActionBar) {
+            player.sendActionBar("")
+        }
+        SessionModeManager.play(player)
     }
 
 }
