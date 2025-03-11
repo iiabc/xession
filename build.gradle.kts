@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    id("io.izzel.taboolib") version "2.0.20" apply false
+    id("io.izzel.taboolib") version "2.0.22" apply false
     id("org.jetbrains.kotlin.jvm") version "1.8.22" apply false
 }
 
@@ -39,7 +39,7 @@ subprojects {
             install(Kether, JavaScript)
         }
         version {
-            taboolib = "6.2.1-f095116"
+            taboolib = "6.2.3-20d868d"
         }
     }
 
