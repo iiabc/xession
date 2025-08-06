@@ -3,12 +3,9 @@ package com.hiusers.mc.xession.session.questengine
 import com.hiusers.mc.xession.api.mode.SessionModeManager
 import com.hiusers.mc.xession.api.reader.SessionSetting
 import com.hiusers.mc.xession.kether.ActionUtil.parseScript
-import com.hiusers.mc.xession.kether.ActionUtil.runAction
 import com.hiusers.mc.xession.reader.ConfigReader
-import com.hiusers.questengine.api.conversation.ActionManager.action
+import com.hiusers.questengine.api.config.conversation.AnswerEntity
 import com.hiusers.questengine.api.conversation.Session
-import com.hiusers.questengine.api.conversation.SessionManager.updateSession
-import com.hiusers.questengine.api.conversation.entity.AnswerEntity
 import com.hiusers.questengine.api.conversation.theme.ConversationTheme
 import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
 import com.hiusers.xerr.api.container.BossbarLayoutContainer
@@ -135,48 +132,15 @@ class ConversionFont : ConversationTheme {
         return renderContent(session)
     }
 
-    override fun selectAnswerAction(session: Session) {
-        // 处于选择模式
-        if (session.selecting) {
-            val player = session.player
-            // 从通过条件的应答配置列表提取
-            val answer = session.passAnswer.getOrNull(session.selected)
-            if (answer != null) {
-                val answerCase = answer.`when`
-                // 逻辑动作
-                if (answerCase.isNotEmpty()) {
-                    // 暂停，不退出会话，因为可能要跳转会话
-                    if (answerCase.action(player)) session.pause()
-                } else {
-                    // 无逻辑动作就直接执行
-                    val answerSend = answer.open
-                    if (answerSend.isNotEmpty()) {
-                        // 跳转会话
-                        player.updateSession(answerSend)
-                    } else {
-                        // 退出会话
-                        session.exit()
-                    }
-                    val answerAction = answer.action
-                    if (answerAction.isNotEmpty()) {
-                        player.runAction(answerAction)
-                    }
-                }
-            } else {
-                session.exit()
-            }
-        }
-    }
-
     override fun sendContent(player: Player, content: Any) {
         val text = (content as String).buildRaw()
         BossbarLayoutContainer.appendLayoutRaw(player, "xession", text)
     }
 
-    override fun answer(session: Session, renderContent: List<Any>, renderAnswer: List<Any>) {
+    override fun answer(session: Session, renderContent: List<Any>, renderAnswer: List<Any>): Boolean {
         if (renderContent.isEmpty()) {
             session.exit()
-            return
+            return true
         }
         session.selecting = true
         val selected = session.selected
@@ -190,6 +154,7 @@ class ConversionFont : ConversationTheme {
         }
         val raw = text.buildRaw()
         BossbarLayoutContainer.appendLayoutRaw(player, "xession", raw)
+        return false
     }
 
     override fun preExitAction(session: Session) {

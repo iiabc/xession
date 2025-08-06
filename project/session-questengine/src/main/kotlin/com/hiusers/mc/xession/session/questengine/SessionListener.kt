@@ -3,8 +3,8 @@ package com.hiusers.mc.xession.session.questengine
 import com.hiusers.mc.xession.api.Select.updateSelection
 import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.mc.xession.reader.PluginReader.hasQuestEngine
-import com.hiusers.questengine.api.conversation.SessionManager.getSession
-import com.hiusers.questengine.api.conversation.reader.ConversationReader
+import com.hiusers.questengine.QuestEngine
+import com.hiusers.questengine.api.config.reader.ConversationReader
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerAnimationEvent
 import org.bukkit.event.player.PlayerAnimationType
@@ -21,9 +21,10 @@ object SessionListener {
      */
     @SubscribeEvent(EventPriority.HIGHEST, ignoreCancelled = true)
     fun scroll(ev: PlayerItemHeldEvent) {
-        val p = ev.player
+        val player = ev.player
         if (hasQuestEngine) {
-            val session = p.getSession() ?: return
+            val api = QuestEngine.api().getConversationAPI()
+            val session = api.getSession(player) ?: return
             if (session.theme?.style?.lowercase() != "xerr") return
             if (!session.selecting) return
             val answerSize = session.passAnswer.size
@@ -44,9 +45,10 @@ object SessionListener {
     fun clickReply(ev: PlayerAnimationEvent) {
         if (ev.animationType == PlayerAnimationType.ARM_SWING) {
             if (hasQuestEngine) {
-                val p = ev.player
+                val player = ev.player
                 if (ConversationReader.themeChatClick) {
-                    val session = p.getSession() ?: return
+                    val api = QuestEngine.api().getConversationAPI()
+                    val session = api.getSession(player) ?: return
                     if (session.theme?.style?.lowercase() != "xerr") return
                     session.selectAnswerAction()
                 }
@@ -103,7 +105,8 @@ object SessionListener {
     }
 
     private fun isSession(player: Player): Boolean {
-        val session = player.getSession() ?: return false
+        val api = QuestEngine.api().getConversationAPI()
+        val session = api.getSession(player) ?: return false
         return session.theme?.style?.lowercase() == "xerr"
     }
 
