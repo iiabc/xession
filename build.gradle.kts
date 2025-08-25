@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    id("io.izzel.taboolib") version "2.0.23" apply false
+    id("io.izzel.taboolib") version "2.0.27" apply false
     id("org.jetbrains.kotlin.jvm") version "2.1.0" apply false
 }
 
@@ -39,7 +39,7 @@ subprojects {
             install(Kether, JavaScript)
         }
         version {
-            taboolib = "6.2.3-7105e58f"
+            taboolib = "6.2.3-6bdc1c7"
         }
     }
 
@@ -56,7 +56,7 @@ subprojects {
         compileOnly("com.google.code.gson:gson:2.8.7")
 
         compileOnly("api:XerrAPI:1.0.0")
-        compileOnly("api:QuestEngineAPI:5.0.0")
+        compileOnly("api:QuestEngineAPI:5.1.0")
         compileOnly("ink.ptms.chemdah:api:1.1.5")
 
         compileOnly(kotlin("stdlib"))
