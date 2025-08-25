@@ -2,11 +2,12 @@ package com.hiusers.mc.xession.session.questengine
 
 import com.hiusers.mc.xession.api.mode.SessionModeManager
 import com.hiusers.mc.xession.api.reader.SessionSetting
-import com.hiusers.mc.xession.kether.ActionUtil.parseScript
 import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.questengine.api.config.conversation.AnswerEntity
 import com.hiusers.questengine.api.conversation.Session
 import com.hiusers.questengine.api.conversation.theme.ConversationTheme
+import com.hiusers.questengine.kether.ActionUtil.parseScriptAsync
+import com.hiusers.questengine.kether.ActionUtil.parseScriptListAsync
 import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
 import com.hiusers.xerr.api.container.BossbarLayoutContainer
 import com.hiusers.xerr.api.container.LayoutContainer
@@ -14,8 +15,9 @@ import org.bukkit.entity.Player
 import taboolib.common5.util.printed
 import taboolib.platform.compat.replacePlaceholder
 import taboolib.platform.util.sendActionBar
+import java.util.concurrent.CompletableFuture
 
-class ConversionFont : ConversationTheme {
+class ConversionFont : ConversationTheme<String> {
 
     override val style = "xerr"
 
@@ -23,18 +25,15 @@ class ConversionFont : ConversationTheme {
 
     override val time = 1L
 
-    override fun renderContent(session: Session): List<Any> {
-        val themeConfig = SessionSetting.sessionEntity ?: return emptyList()
-
-        val renderContent = mutableListOf<String>()
-
+    override fun renderContent(session: Session): CompletableFuture<List<String>> {
         val player = session.player
         val name = session.name ?: "{name}"
-
         val conversation = session.conversation
+        val list = conversation.asLangContent(player)
 
-        // 提取对话内容
-        val list = conversation.content
+        val themeConfig = SessionSetting.sessionEntity ?: return CompletableFuture.completedFuture(emptyList())
+
+        val renderContent = mutableListOf<String>()
 
         // 替换变量
         val themeVariableMap = themeConfig.content.variable.toMutableMap()
@@ -43,101 +42,109 @@ class ConversionFont : ConversationTheme {
         }
         val variableMap = themeVariableMap.toMutableMap()
 
-        // 遍历对话行内容
-        list.forEachIndexed { index, s ->
-            val text = player.parseScript(s).replacePlaceholder(player)
-
-            themeVariableMap.keys.forEachIndexed { j, _ ->
-                val finder = "{text_$j}"
-                themeVariableMap.filterValues { it == finder }.forEach { (key, _) ->
-                    variableMap[key] = ""
-                }
-            }
-
-            // 打印
-            text.printed().forEach {
-                themeVariableMap.filterValues { v -> v == "{text_$index}" }.forEach { (key, _) ->
-                    variableMap[key] = it
-                }
-                var compStr = ""
-                LayoutContainer.buildComponentString(player, themeConfig.content.layout, variableMap)?.let { comp ->
-                    compStr += comp
-                    conversation.tags.forEach {
-                        LayoutContainer.buildComponentString(player, it)?.let { tagsComp ->
-                            compStr += tagsComp
-                        }
-                    }
-                    renderContent.add(compStr)
-                }
-            }
-            // 更新模板，此行是最后，进行完整填充，为下一行对话做准备
-            // 填充
-            themeVariableMap.filterValues { it == "{text_$index}" }.forEach { (key, _) ->
-                themeVariableMap[key] = text
-            }
+        // 异步处理脚本解析
+        player.parseScriptListAsync(list)
+        val parseFutures = list.map { script ->
+            player.parseScriptAsync(script)
+                .thenApply { parsedScript -> parsedScript.replacePlaceholder(player) }
         }
 
-        return renderContent
+        return CompletableFuture.allOf(*parseFutures.toTypedArray())
+            .thenApplyAsync {
+                val parsedTexts = parseFutures.map { it.join() }
 
-    }
+                // 遍历对话行内容 - 保持原有逻辑不变
+                parsedTexts.forEachIndexed { index, text ->
+                    text.printed().forEach { printedText ->
+                        themeVariableMap.keys.forEachIndexed { j, _ ->
+                            val finder = "{text_$j}"
+                            themeVariableMap.filterValues { it == finder }.forEach { (key, _) ->
+                                variableMap[key] = ""
+                            }
+                        }
 
-    override fun renderAnswer(player: Player, passAnswer: List<AnswerEntity>): List<Any> {
-        val themeConfig = SessionSetting.sessionEntity ?: return emptyList()
-        val renderAnswer = mutableListOf<String>()
+                        themeVariableMap.filterValues { it == "{text_$index}" }.forEach { (key, _) ->
+                            variableMap[key] = printedText
+                        }
 
-        val answerLayout = themeConfig.answer.layout
-        val commonLayout = answerLayout.common
-        val selectLayout = answerLayout.select
+                        // 保持原有LayoutContainer.buildComponentString调用方式
+                        var compStr = ""
+                        LayoutContainer.buildComponentString(player, themeConfig.content.layout, variableMap)?.let { comp ->
+                            compStr += comp
+                            conversation.tags.forEach { tag ->
+                                LayoutContainer.buildComponentString(player, tag)?.let { tagsComp ->
+                                    compStr += tagsComp
+                                }
+                            }
+                            renderContent.add(compStr)
+                        }
+                    }
 
-        for (answerIndex in passAnswer.indices) {
-            // 渲染应答
-            var componentString = ""
-
-            // 处理每个应答的渲染
-            passAnswer.forEachIndexed { index, answerEntity ->
-                // 当前行的文本
-                val text = player.parseScript(answerEntity.text).replacePlaceholder(player)
-
-                // 处理变量映射替换
-                val variableMap = answerLayout.variable.toMutableMap().apply {
-                    filterValues { it == "{answer}" }.forEach { (key, _) ->
-                        this[key] = text
+                    // 保持原有模板更新逻辑
+                    themeVariableMap.filterValues { it == "{text_$index}" }.forEach { (key, _) ->
+                        themeVariableMap[key] = text
                     }
                 }
 
-                // 渲染公共部分
-                if (index < commonLayout.size) {
-                    LayoutContainer.buildComponentString(player, commonLayout[index], variableMap)?.let { comp ->
-                        componentString += comp
+                renderContent
+            }
+    }
+
+    override fun renderAnswer(player: Player, passAnswer: List<AnswerEntity>): CompletableFuture<List<String>> {
+        return CompletableFuture.supplyAsync {
+            val themeConfig = SessionSetting.sessionEntity ?: return@supplyAsync emptyList()
+            val renderAnswer = mutableListOf<String>()
+
+            val answerLayout = themeConfig.answer.layout
+            val commonLayout = answerLayout.common
+            val selectLayout = answerLayout.select
+
+            // 应答渲染逻辑
+            for (answerIndex in passAnswer.indices) {
+                var componentString = ""
+
+                passAnswer.forEachIndexed { index, answerEntity ->
+                    // 异步解析
+                    val text = player.parseScriptAsync(answerEntity.asLangAnswerText(player))
+                        .thenApply { it.replacePlaceholder(player) }
+                        .join()
+
+                    val variableMap = answerLayout.variable.toMutableMap().apply {
+                        filterValues { it == "{answer}" }.forEach { (key, _) ->
+                            this[key] = text
+                        }
                     }
 
-                    // 如果当前行是选中的，渲染选中部分
-                    if (index == answerIndex && index < selectLayout.size) {
-                        LayoutContainer.buildComponentString(player, selectLayout[index])?.let { comp ->
+                    if (index < commonLayout.size) {
+                        LayoutContainer.buildComponentString(player, commonLayout[index], variableMap)?.let { comp ->
                             componentString += comp
                         }
+
+                        if (index == answerIndex && index < selectLayout.size) {
+                            LayoutContainer.buildComponentString(player, selectLayout[index])?.let { comp ->
+                                componentString += comp
+                            }
+                        }
                     }
                 }
+
+                renderAnswer.add(componentString)
             }
 
-            // 将渲染结果添加到渲染列表
-            renderAnswer.add(componentString)
+            renderAnswer
         }
-
-        return renderAnswer
     }
 
-
-    override fun renderContentAnimation(session: Session): List<Any> {
+    override fun renderContentAnimation(session: Session): CompletableFuture<List<String>> {
         return renderContent(session)
     }
 
-    override fun sendContent(player: Player, content: Any) {
-        val text = (content as String).buildRaw()
+    override fun sendContent(player: Player, content: String) {
+        val text = content.buildRaw()
         BossbarLayoutContainer.appendLayoutRaw(player, "xession", text)
     }
 
-    override fun answer(session: Session, renderContent: List<Any>, renderAnswer: List<Any>): Boolean {
+    override fun answer(session: Session, renderContent: List<String>, renderAnswer: List<String>): Boolean {
         if (renderContent.isEmpty()) {
             session.exit()
             return true
@@ -145,11 +152,12 @@ class ConversionFont : ConversationTheme {
         session.selecting = true
         val selected = session.selected
         val player = session.player
-        // 发送最后一行对话内容和全部应答
-        var text = renderContent[renderContent.size - 1] as String
+
+        // 保持原有内容拼接逻辑
+        var text = renderContent[renderContent.size - 1]
         if (renderAnswer.isNotEmpty()) {
             if (renderAnswer.size > selected) {
-                text += renderAnswer[selected] as String
+                text += renderAnswer[selected]
             }
         }
         val raw = text.buildRaw()
@@ -169,5 +177,4 @@ class ConversionFont : ConversationTheme {
         }
         SessionModeManager.play(player)
     }
-
 }
