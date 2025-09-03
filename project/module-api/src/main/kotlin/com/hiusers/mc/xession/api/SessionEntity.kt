@@ -22,6 +22,7 @@ data class SessionEntityAnswerLayout(
 )
 
 data class SessionEntityOption(
+    val separator: String = "",
     val animation: SessionEntityOptionAnimation = SessionEntityOptionAnimation()
 )
 

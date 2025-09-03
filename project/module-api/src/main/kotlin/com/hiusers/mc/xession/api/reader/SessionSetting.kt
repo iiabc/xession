@@ -7,7 +7,7 @@ import taboolib.module.configuration.Configuration
 
 object SessionSetting {
 
-    var sessionEntity: SessionEntity? = null
+    var sessionEntity: SessionEntity = SessionEntity()
 
     fun load() {
         val file = FileUtil.getFile("session/theme.yml", true)
@@ -16,7 +16,6 @@ object SessionSetting {
     }
 
     fun unload() {
-        sessionEntity = null
     }
 
 }
