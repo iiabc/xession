@@ -39,7 +39,7 @@ subprojects {
             install(Kether, JavaScript)
         }
         version {
-            taboolib = "6.2.3-6bdc1c7"
+            taboolib = "6.2.3-e102d76"
         }
     }
 
@@ -56,7 +56,7 @@ subprojects {
         compileOnly("com.google.code.gson:gson:2.8.7")
 
         compileOnly("api:XerrAPI:1.0.0")
-        compileOnly("api:QuestEngineAPI:5.1.0")
+        compileOnly("api:QuestEngineAPI:5.2.1")
         compileOnly("ink.ptms.chemdah:api:1.1.5")
 
         compileOnly(kotlin("stdlib"))
