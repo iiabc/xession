@@ -1,7 +1,7 @@
 package com.hiusers.mc.xession.session.questengine
 
 import com.hiusers.mc.xession.api.mode.SessionModeManager
-import com.hiusers.mc.xession.api.reader.SessionSetting
+import com.hiusers.mc.xession.api.reader.SessionSetting.sessionEntity
 import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.questengine.api.config.conversation.AnswerEntity
 import com.hiusers.questengine.api.conversation.Session
@@ -12,6 +12,7 @@ import com.hiusers.xerr.api.builder.ComponentBuilder.buildRaw
 import com.hiusers.xerr.api.container.BossbarLayoutContainer
 import com.hiusers.xerr.api.container.LayoutContainer
 import org.bukkit.entity.Player
+import taboolib.common5.clong
 import taboolib.common5.util.printed
 import taboolib.platform.compat.replacePlaceholder
 import taboolib.platform.util.sendActionBar
@@ -21,9 +22,9 @@ class ConversionFont : ConversationTheme<String> {
 
     override val style = "xerr"
 
-    override val animation = true
+    override val animation = sessionEntity.option.animation.enable
 
-    override val time = 1L
+    override val time = (sessionEntity.option.animation.speed).clong
 
     override fun renderContent(session: Session): CompletableFuture<List<String>> {
         val player = session.player
@@ -31,19 +32,12 @@ class ConversionFont : ConversationTheme<String> {
         val conversation = session.conversation
         val list = conversation.asLangContent(player)
 
-        val themeConfig = SessionSetting.sessionEntity ?: return CompletableFuture.completedFuture(emptyList())
-
-        val renderContent = mutableListOf<String>()
-
         // 替换变量
-        val themeVariableMap = themeConfig.content.variable.toMutableMap()
+        val themeVariableMap = sessionEntity.content.variable.toMutableMap()
         themeVariableMap.filterValues { it == "{name}" }.forEach { (key, _) ->
             themeVariableMap[key] = name
         }
-        val variableMap = themeVariableMap.toMutableMap()
 
-        // 异步处理脚本解析
-        player.parseScriptListAsync(list)
         val parseFutures = list.map { script ->
             player.parseScriptAsync(script)
                 .thenApply { parsedScript -> parsedScript.replacePlaceholder(player) }
@@ -52,10 +46,52 @@ class ConversionFont : ConversationTheme<String> {
         return CompletableFuture.allOf(*parseFutures.toTypedArray())
             .thenApplyAsync {
                 val parsedTexts = parseFutures.map { it.join() }
+                val variableMap = themeVariableMap.toMutableMap()
 
-                // 遍历对话行内容 - 保持原有逻辑不变
+                // 处理静态内容渲染
                 parsedTexts.forEachIndexed { index, text ->
-                    text.printed().forEach { printedText ->
+                    themeVariableMap.filterValues { it == "{text_$index}" }.forEach { (key, _) ->
+                        variableMap[key] = text
+                    }
+                }
+
+                var compStr = ""
+                LayoutContainer.buildComponentString(player, sessionEntity.content.layout, variableMap)?.let { comp ->
+                    compStr += comp
+                    conversation.tags.forEach { tag ->
+                        LayoutContainer.buildComponentString(player, tag)?.let { tagsComp ->
+                            compStr += tagsComp
+                        }
+                    }
+                }
+
+                mutableListOf(compStr)
+            }
+    }
+
+    override fun renderContentAnimation(session: Session): CompletableFuture<List<String>> {
+        val player = session.player
+        val name = session.name ?: "{name}"
+        val conversation = session.conversation
+        val list = conversation.asLangContent(player)
+
+        // 替换变量
+        val themeVariableMap = sessionEntity.content.variable.toMutableMap()
+        themeVariableMap.filterValues { it == "{name}" }.forEach { (key, _) ->
+            themeVariableMap[key] = name
+        }
+
+        return player.parseScriptListAsync(list)
+            .thenApply { parsedList -> parsedList.replacePlaceholder(player) }
+            .thenApplyAsync { parsedTexts ->
+                val allFrames = mutableListOf<String>()
+
+                // 遍历对话行内容生成所有动画帧
+                parsedTexts.forEachIndexed { index, text ->
+                    text.printed(sessionEntity.option.separator).forEach { printedText ->
+                        val variableMap = themeVariableMap.toMutableMap()
+
+                        // 清空其他文本变量
                         themeVariableMap.keys.forEachIndexed { j, _ ->
                             val finder = "{text_$j}"
                             themeVariableMap.filterValues { it == finder }.forEach { (key, _) ->
@@ -63,39 +99,39 @@ class ConversionFont : ConversationTheme<String> {
                             }
                         }
 
+                        // 设置当前动画文本
                         themeVariableMap.filterValues { it == "{text_$index}" }.forEach { (key, _) ->
                             variableMap[key] = printedText
                         }
 
-                        // 保持原有LayoutContainer.buildComponentString调用方式
+                        // 生成当前帧内容
                         var compStr = ""
-                        LayoutContainer.buildComponentString(player, themeConfig.content.layout, variableMap)?.let { comp ->
-                            compStr += comp
-                            conversation.tags.forEach { tag ->
-                                LayoutContainer.buildComponentString(player, tag)?.let { tagsComp ->
-                                    compStr += tagsComp
+                        LayoutContainer.buildComponentString(player, sessionEntity.content.layout, variableMap)
+                            ?.let { comp ->
+                                compStr += comp
+                                conversation.tags.forEach { tag ->
+                                    LayoutContainer.buildComponentString(player, tag)?.let { tagsComp ->
+                                        compStr += tagsComp
+                                    }
                                 }
+                                allFrames.add(compStr)
                             }
-                            renderContent.add(compStr)
-                        }
                     }
 
-                    // 保持原有模板更新逻辑
+                    // 更新模板变量为完整文本
                     themeVariableMap.filterValues { it == "{text_$index}" }.forEach { (key, _) ->
                         themeVariableMap[key] = text
                     }
                 }
-
-                renderContent
+                allFrames
             }
     }
 
     override fun renderAnswer(player: Player, passAnswer: List<AnswerEntity>): CompletableFuture<List<String>> {
         return CompletableFuture.supplyAsync {
-            val themeConfig = SessionSetting.sessionEntity ?: return@supplyAsync emptyList()
             val renderAnswer = mutableListOf<String>()
 
-            val answerLayout = themeConfig.answer.layout
+            val answerLayout = sessionEntity.answer.layout
             val commonLayout = answerLayout.common
             val selectLayout = answerLayout.select
 
@@ -133,10 +169,6 @@ class ConversionFont : ConversationTheme<String> {
 
             renderAnswer
         }
-    }
-
-    override fun renderContentAnimation(session: Session): CompletableFuture<List<String>> {
-        return renderContent(session)
     }
 
     override fun sendContent(player: Player, content: String) {
