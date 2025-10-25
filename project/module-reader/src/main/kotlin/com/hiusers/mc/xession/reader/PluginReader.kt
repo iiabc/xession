@@ -14,4 +14,8 @@ object PluginReader {
         hasPlugin("Chemdah")
     }
 
+    val hasBetonQuest by lazy {
+        hasPlugin("BetonQuest")
+    }
+
 }

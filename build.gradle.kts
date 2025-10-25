@@ -30,6 +30,7 @@ subprojects {
                 name("Xerr")
                 name("QuestEngine").optional(true)
                 name("Chemdah").optional(true)
+                name("BetonQuest").optional(true)
             }
         }
         env {
@@ -58,6 +59,7 @@ subprojects {
         compileOnly("api:XerrAPI:1.0.0")
         compileOnly("api:QuestEngineAPI:5.2.1")
         compileOnly("ink.ptms.chemdah:api:1.1.5")
+        compileOnly("org.betonquest:betonquest:2.0.0")
 
         compileOnly(kotlin("stdlib"))
     }

@@ -111,7 +111,7 @@ object SessionListener {
      */
     @SubscribeEvent
     fun preventSystem(ev: PacketSendEvent) {
-        if (ev.packet.nameInSpigot == "ClientboundSetActionBarTextPacket") {
+        if (ev.packet.name == "ClientboundSetActionBarTextPacket") {
             if (hasChemdah && ConfigReader.preventActionBar) {
                 if (isSession(ev.player)) {
                     ev.isCancelled = true
@@ -122,7 +122,8 @@ object SessionListener {
 
     @SubscribeEvent
     fun cameraClick(ev: PacketReceiveEvent) {
-        if (ev.packet.nameInSpigot == "PacketPlayInUseEntity") {
+        val packetName = ev.packet.name
+        if (packetName == "PacketPlayInUseEntity" || packetName == "ServerboundInteractPacket") {
             // 避免在相机状态下点击发生错误
             if (ConfigReader.supportPacket && ConfigReader.sessionPacket) {
                 if (hasChemdah) {
