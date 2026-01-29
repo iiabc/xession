@@ -5,3 +5,4 @@ prevent:
 session:
   # 是否使用数据包模式
   packet: false
+  click: left

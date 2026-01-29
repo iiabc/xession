@@ -17,6 +17,9 @@ object ConfigReader {
     @ConfigNode("session.packet")
     var sessionPacket: Boolean = false
 
+    @ConfigNode("session.click")
+    var sessionClick: String = "left"
+
     // 1.19+ 才能支持数据包模式
     val supportPacket = MinecraftVersion.versionId >= 11900
 

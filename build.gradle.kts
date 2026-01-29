@@ -18,8 +18,6 @@ subprojects {
     configure<TabooLibExtension> {
         description {
             name("Xession")
-//            name(rootProject.name)
-//            prefix(rootProject.name)
             contributors {
                 name("HiUsers")
             }
@@ -30,7 +28,6 @@ subprojects {
                 name("Xerr")
                 name("QuestEngine").optional(true)
                 name("Chemdah").optional(true)
-                name("BetonQuest").optional(true)
             }
         }
         env {
@@ -40,7 +37,7 @@ subprojects {
             install(Kether, JavaScript)
         }
         version {
-            taboolib = "6.2.3-e102d76"
+            taboolib = "6.2.4-1645904"
         }
     }
 
@@ -56,10 +53,9 @@ subprojects {
 
         compileOnly("com.google.code.gson:gson:2.8.7")
 
-        compileOnly("api:XerrAPI:1.0.0")
-        compileOnly("api:QuestEngineAPI:5.2.1")
+        compileOnly("com.hiusers:XerrAPI:1.6.2")
+        compileOnly("com.hiusers.questengine:QuestEngine-api:5.3.6")
         compileOnly("ink.ptms.chemdah:api:1.1.5")
-        compileOnly("org.betonquest:betonquest:2.0.0")
 
         compileOnly(kotlin("stdlib"))
     }

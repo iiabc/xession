@@ -4,7 +4,6 @@ import com.hiusers.mc.xession.api.Select.updateSelection
 import com.hiusers.mc.xession.reader.ConfigReader
 import com.hiusers.mc.xession.reader.PluginReader.hasQuestEngine
 import com.hiusers.questengine.QuestEngine
-import com.hiusers.questengine.api.config.reader.ConversationReader
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerAnimationEvent
 import org.bukkit.event.player.PlayerAnimationType
@@ -44,14 +43,13 @@ object SessionListener {
     @SubscribeEvent
     fun clickReply(ev: PlayerAnimationEvent) {
         if (ev.animationType == PlayerAnimationType.ARM_SWING) {
-            if (hasQuestEngine) {
+            if (hasQuestEngine && ConfigReader.sessionClick.equals("left", ignoreCase = true)) {
                 val player = ev.player
-                if (ConversationReader.themeChatClick) {
-                    val api = QuestEngine.api().getConversationAPI()
-                    val session = api.getSession(player) ?: return
-                    if (session.theme?.style?.lowercase() != "xerr") return
-                    session.selectAnswerAction()
-                }
+                val api = QuestEngine.api().getConversationAPI()
+                val session = api.getSession(player) ?: return
+                if (session.theme?.style?.lowercase() != "xerr") return
+                session.selectAnswerAction()
+                ev.isCancelled = true
             }
         }
     }
